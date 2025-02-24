@@ -1,20 +1,29 @@
 #!/bin/sh
-# Remove any existing X server lock files
-rm -f /tmp/.X1-lock
+# Remove stale X11 lock files
+rm -f /tmp/.X*lock
 
-# Start Xvfb (virtual framebuffer) on display :1
-Xvfb :1 -screen 0 1024x768x16 &
-export DISPLAY=:1
+# Start Xvfb on display :0 (not :1)
+Xvfb :0 -screen 0 1024x768x24 -ac +extension GLX +render -noreset &
+export DISPLAY=:0
 
-# Start Fluxbox (lightweight window manager)
+# Generate X authority file
+xauth generate :0 . trusted
+xauth add "$DISPLAY" . $(mcookie)
+
+# Start Fluxbox window manager
 fluxbox &
 
-# Start x11vnc (VNC server)
-x11vnc -display :1 -forever -shared -nopw -rfbport 5900 &
+# Start D-Bus system daemon
+sudo mkdir -p /var/run/dbus
+sudo dbus-daemon --system --fork
 
-# Start dbus (required for Falkon)
-dbus-uuidgen > /var/lib/dbus/machine-id
-dbus-daemon --system --fork
+# Start x11vnc (no password, shared session)
+x11vnc -display :0 -forever -shared -nopw -rfbport 5900 -auth /home/browseruser/.Xauthority &
 
-# Start Falkon (lightweight browser)
-falkon
+# Start Falkon browser
+falkon --no-sandbox &
+# (Optional) For Chromium instead: 
+# chromium-browser --no-sandbox --disable-gpu &
+
+# Keep container running
+tail -f /dev/null
