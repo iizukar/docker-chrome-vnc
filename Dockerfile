@@ -2,7 +2,7 @@
 FROM alpine:latest
 
 # Install dependencies
-RUN apk add --no-cache falkon xvfb x11vnc fluxbox
+RUN apk add --no-cache falkon xvfb x11vnc fluxbox dbus qt5-qtbase-x11 ttf-freefont
 
 # Copy the start script
 COPY start.sh /start.sh
