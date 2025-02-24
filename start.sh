@@ -1,12 +1,16 @@
 #!/bin/bash
 
-# Start Xvfb with 24-bit color depth
-Xvfb :0 -screen 0 1280x720x24 +extension GLX +render -nolisten tcp &
+# Start D-Bus system daemon
+mkdir -p /var/run/dbus
+dbus-daemon --system --nofork &
+
+# Start Xvfb with extended permissions
+Xvfb :0 -screen 0 1280x720x24 +extension GLX +render -nolisten tcp -ac &
 
 # Start fluxbox
 fluxbox -display :0 &
 
-# Configure Chromium flags
+# Configure Chromium with additional flags
 chromium --no-sandbox \
          --disable-gpu \
          --disable-software-rasterizer \
@@ -14,6 +18,9 @@ chromium --no-sandbox \
          --use-gl=swiftshader \
          --ignore-gpu-blocklist \
          --start-maximized \
+         --disable-cloud-management \
+         --disable-oom-kill-monitor \
+         --dbus-stub \
          --remote-debugging-port=9222 &
 
 # Start VNC server
