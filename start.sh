@@ -1,32 +1,13 @@
 #!/bin/bash
 
-# Start D-Bus system daemon
+# Configure D-Bus directories
 mkdir -p /var/run/dbus
+chown messagebus:messagebus /var/run/dbus
+
+# Start system bus
 dbus-daemon --system --nofork &
 
-# Start Xvfb with extended permissions
-Xvfb :0 -screen 0 1280x720x24 +extension GLX +render -nolisten tcp -ac &
+# Start session bus
+export DBUS_SESSION_BUS_ADDRESS=$(dbus-daemon --config-file=/usr/share/dbus-1/session.conf --print-address)
 
-# Start fluxbox
-fluxbox -display :0 &
-
-# Configure Chromium with additional flags
-chromium --no-sandbox \
-         --disable-gpu \
-         --disable-software-rasterizer \
-         --disable-dev-shm-usage \
-         --use-gl=swiftshader \
-         --ignore-gpu-blocklist \
-         --start-maximized \
-         --disable-cloud-management \
-         --disable-oom-kill-monitor \
-         --dbus-stub \
-         --remote-debugging-port=9222 &
-
-# Start VNC server
-x11vnc -display :0 -forever -noxdamage -passwd secret -rfbport $VNC_PORT &
-
-# Start noVNC
-websockify -D --web=/usr/share/novnc $NOVNC_PORT localhost:$VNC_PORT
-
-tail -f /dev/null
+# Rest of your existing startup commands...
