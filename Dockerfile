@@ -1,6 +1,6 @@
 FROM debian:bullseye-slim
 
-# Install all dependencies
+# Install dependencies (keep existing packages)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     xvfb fluxbox chromium x11vnc websockify novnc \
@@ -11,23 +11,21 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create fluxbox config
+# Create fluxbox config directory first
 RUN mkdir -p /root/.fluxbox
-COPY fluxbox-init /root/.fluxbox/init
 
-# Environment variables
+# Copy configuration files
+COPY fluxbox-init /root/.fluxbox/init
+COPY start.sh /start.sh
+
+# Set permissions and environment
+RUN chmod +x /start.sh && \
+    chmod 644 /root/.fluxbox/init
+
 ENV DISPLAY=:0
 ENV VNC_PORT=5900
 ENV NOVNC_PORT=6080
 ENV LIBGL_ALWAYS_SOFTWARE=1
-ENV EGL_PLATFORM=surfaceless
-
-# Kernel parameters
-RUN sysctl -w kernel.randomize_va_space=0 && \
-    sysctl -w vm.overcommit_memory=1
-
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
 
 EXPOSE $NOVNC_PORT
 
