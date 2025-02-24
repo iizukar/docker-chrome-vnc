@@ -1,15 +1,31 @@
 # Use Alpine Linux as the base image
 FROM alpine:latest
 
-# Install dependencies
-RUN apk add --no-cache falkon xvfb x11vnc fluxbox dbus qt5-qtbase-x11 ttf-freefont
+# Install all dependencies
+RUN apk add --no-cache \
+    xvfb \
+    x11vnc \
+    fluxbox \
+    falkon \
+    dbus \
+    ttf-freefont \
+    qt5-qtbase-x11 \
+    vulkan-tools \
+    mesa-dri-gallium \
+    && mkdir -p /var/run/dbus
 
-# Copy the start script
+# Create a non-root user
+RUN adduser -D -u 1000 browseruser
+
+# Copy start script
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Expose the VNC port
+# Expose VNC port
 EXPOSE 5900
 
-# Start the virtual browser and VNC server
+# Run as non-root user
+USER browseruser
+
+# Start the services
 CMD ["/start.sh"]
