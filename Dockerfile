@@ -2,7 +2,7 @@
 FROM alpine:latest
 
 # Install dependencies
-RUN apk add --no-cache midori xvfb x11vnc fluxbox
+RUN apk add --no-cache falkon xvfb x11vnc fluxbox
 
 # Copy the start script
 COPY start.sh /start.sh
