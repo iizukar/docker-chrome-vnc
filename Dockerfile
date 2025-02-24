@@ -1,22 +1,30 @@
 FROM debian:bullseye-slim
 
-# Install dependencies with D-Bus and systemd support
+# Install all dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     xvfb fluxbox chromium x11vnc websockify novnc \
     vulkan-tools mesa-vulkan-drivers \
     libgl1-mesa-dri libegl1-mesa libgl1-mesa-glx \
-    dbus dbus-x11 libasound2 libdbus-1-3 && \
+    dbus dbus-x11 libasound2 libdbus-1-3 \
+    upower policykit-1 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Configure environment
+# Create fluxbox config
+RUN mkdir -p /root/.fluxbox
+COPY fluxbox-init /root/.fluxbox/init
+
+# Environment variables
 ENV DISPLAY=:0
 ENV VNC_PORT=5900
 ENV NOVNC_PORT=6080
 ENV LIBGL_ALWAYS_SOFTWARE=1
 ENV EGL_PLATFORM=surfaceless
-ENV DBUS_SESSION_BUS_ADDRESS="unix:path=/tmp/dbus.sock"
+
+# Kernel parameters
+RUN sysctl -w kernel.randomize_va_space=0 && \
+    sysctl -w vm.overcommit_memory=1
 
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
