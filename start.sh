@@ -1,29 +1,19 @@
-#!/bin/sh
-# Remove stale X11 lock files
-rm -f /tmp/.X*lock
+#!/bin/bash
 
-# Start Xvfb on display :0 (not :1)
-Xvfb :0 -screen 0 1024x768x24 -ac +extension GLX +render -noreset &
-export DISPLAY=:0
+# Start Xvfb in background
+Xvfb :0 -screen 0 1280x720x16 &
 
-# Generate X authority file
-xauth generate :0 . trusted
-xauth add "$DISPLAY" . $(mcookie)
-
-# Start Fluxbox window manager
+# Start fluxbox window manager
 fluxbox &
 
-# Start D-Bus system daemon
-sudo mkdir -p /var/run/dbus
-sudo dbus-daemon --system --fork
+# Start chromium in fullscreen (headless mode)
+chromium --no-sandbox --start-maximized --disable-gpu --remote-debugging-port=9222 &
 
-# Start x11vnc (no password, shared session)
-x11vnc -display :0 -forever -shared -nopw -rfbport 5900 -auth /home/browseruser/.Xauthority &
+# Start VNC server
+x11vnc -display :0 -forever -noxdamage -passwd secret -rfbport $VNC_PORT &
 
-# Start Falkon browser
-falkon --no-sandbox &
-# (Optional) For Chromium instead: 
-# chromium-browser --no-sandbox --disable-gpu &
+# Start noVNC
+websockify -D --web=/usr/share/novnc $NOVNC_PORT localhost:$VNC_PORT
 
 # Keep container running
 tail -f /dev/null
