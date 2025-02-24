@@ -1,31 +1,24 @@
-# Use Alpine Linux as the base image
-FROM alpine:latest
+FROM debian:bullseye-slim
 
-# Install all dependencies
-RUN apk add --no-cache \
-    xvfb \
-    x11vnc \
-    fluxbox \
-    falkon \
-    dbus \
-    ttf-freefont \
-    qt5-qtbase-x11 \
-    vulkan-tools \
-    mesa-dri-gallium \
-    && mkdir -p /var/run/dbus
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    xvfb fluxbox chromium x11vnc websockify novnc && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user
-RUN adduser -D -u 1000 browseruser
+# Configure NovNC
+RUN ln -s /usr/share/novnc/vnc.html /usr/share/novnc/index.html
+
+# Set display and VNC port
+ENV DISPLAY=:0
+ENV VNC_PORT=5900
+ENV NOVNC_PORT=6080
 
 # Copy start script
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Expose VNC port
-EXPOSE 5900
+EXPOSE $NOVNC_PORT
 
-# Run as non-root user
-USER browseruser
-
-# Start the services
 CMD ["/start.sh"]
