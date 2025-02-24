@@ -1,7 +1,7 @@
+# Minimal fluxbox configuration
 session.screen0.slit.placement: BottomCenter
-session.screen0.slit.autoHide: 0
-session.screen0.slit.onhead: 0
+session.screen0.slit.autoHide: false
 session.screen0.toolbar.placement: BottomCenter
-session.screen0.toolbar.visible: true
-session.screen0.iconbar.mode: {static} (workspace)
+session.screen0.toolbar.visible: false
+session.screen0.iconbar.mode: +workspace
 session.styleFile: /usr/share/fluxbox/styles/bloe
